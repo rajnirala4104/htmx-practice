@@ -1,13 +1,21 @@
 package main
 
 import (
-    "fmt"
+    //"fmt"
     "log"
     "net/http"
+    "html/template"
 )
 
 func handlerLikeMe(w http.ResponseWriter, r *http.Request) {
-    fmt.Fprint(w, "It works")
+    page, err := template.ParseFiles("ui/html/home.tmpl.html", "ui/html/like-button.tmpl.html", "ui/html/liked-button.tmpl.html")
+    if err != nil {
+        log.Fatal(err.Error())
+    }
+    err = page.ExecuteTemplate(w, "base", nil)
+    if err != nil {
+        log.Fatal(err.Error())
+    }
 }
 
 func main() {
