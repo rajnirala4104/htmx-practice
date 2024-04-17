@@ -5,7 +5,11 @@ import (
     "log"
     "net/http"
     "html/template"
+    "sync"
 )
+
+var mu sync.Mutex
+var count int
 
 func handlerLikeMe(w http.ResponseWriter, r *http.Request) {
     page, err := template.ParseFiles(
@@ -13,6 +17,7 @@ func handlerLikeMe(w http.ResponseWriter, r *http.Request) {
         "ui/html/like.tmpl.html",
         "ui/html/like-button.tmpl.html",
         "ui/html/liked-button.tmpl.html",
+        "ui/html/counter.tmpl.html",
         )
     if err != nil {
         log.Fatal(err.Error())
@@ -24,28 +29,40 @@ func handlerLikeMe(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlerLike(w http.ResponseWriter, r *http.Request) {
+    mu.Lock()
+    count++
+    mu.Unlock()
     t, err := template.ParseFiles(
         "ui/html/no-like.tmpl.html",
         "ui/html/liked-button.tmpl.html",
+        "ui/html/counter.tmpl.html",
         )
     if err != nil {
         log.Fatal(err.Error())
     }
-    err = t.ExecuteTemplate(w, "no-like", nil)
+    mu.Lock()
+    err = t.ExecuteTemplate(w, "no-like", count)
+    mu.Unlock()
     if err != nil {
         log.Fatal(err.Error())
     }
 }
 
 func handlerNoLike(w http.ResponseWriter, r *http.Request) {
+    mu.Lock()
+    count--
+    mu.Unlock()
     t, err := template.ParseFiles(
         "ui/html/like.tmpl.html",
         "ui/html/like-button.tmpl.html",
+        "ui/html/counter.tmpl.html",
         )
     if err != nil {
         log.Fatal(err.Error())
     }
-    err = t.ExecuteTemplate(w, "like", nil)
+    mu.Lock()
+    err = t.ExecuteTemplate(w, "like", count)
+    mu.Unlock()
     if err != nil {
         log.Fatal(err.Error())
     }
