@@ -9,7 +9,7 @@ import (
 )
 
 var mu sync.Mutex
-var count int
+var count int = 0
 
 func handlerLikeMe(w http.ResponseWriter, r *http.Request) {
     page, err := template.ParseFiles(
@@ -22,7 +22,9 @@ func handlerLikeMe(w http.ResponseWriter, r *http.Request) {
     if err != nil {
         log.Fatal(err.Error())
     }
-    err = page.ExecuteTemplate(w, "base", nil)
+    mu.Lock()
+    err = page.ExecuteTemplate(w, "base", count)
+    mu.Unlock()
     if err != nil {
         log.Fatal(err.Error())
     }
