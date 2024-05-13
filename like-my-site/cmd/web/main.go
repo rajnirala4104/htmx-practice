@@ -70,11 +70,27 @@ func handlerNoLike(w http.ResponseWriter, r *http.Request) {
     }
 }
 
+func handlerCounter(w http.ResponseWriter, r *http.Request) {
+    t, err := template.ParseFiles(
+        "ui/html/counter.tmpl.html",
+        )
+    if err != nil {
+        log.Fatal(err.Error())
+    }
+    mu.Lock()
+    err = t.ExecuteTemplate(w, "counter", count)
+    mu.Unlock()
+    if err != nil {
+        log.Fatal(err.Error())
+    }
+}
+
 func main() {
     mux := http.NewServeMux()
     mux.HandleFunc("/", handlerLikeMe)
     mux.HandleFunc("/like", handlerLike)
     mux.HandleFunc("/no-like", handlerNoLike)
+    mux.HandleFunc("/counter", handlerCounter)
 
     log.Println("Listening on :8080")
     err := http.ListenAndServe(":8080", mux)
